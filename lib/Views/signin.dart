@@ -8,20 +8,20 @@ import 'package:demo_interview/Views/singup.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-class Login_page extends StatefulWidget {
-  const Login_page({super.key});
+class Signin extends StatefulWidget {
+  const Signin({super.key});
 
   @override
-  State<Login_page> createState() => _Login_pageState();
+  State<Signin> createState() => _SigninState();
 }
 
-class _Login_pageState extends State<Login_page> {
+class _SigninState extends State<Signin> {
   bool _isOuscure = true;
   // bool _isRememberme = true;
 
   final _formkey = GlobalKey<FormState>();
-  final _usernameControler = TextEditingController();
-  final _passwordControler = TextEditingController();
+  TextEditingController _usernameControler = TextEditingController();
+  TextEditingController _passwordControler = TextEditingController();
   var sneckBar = SnackBar(
     content: Text('Longin Success!'),
   );
@@ -40,7 +40,7 @@ class _Login_pageState extends State<Login_page> {
 
   Future<void> _fetchData() async {
     final url =
-        Uri.parse("http://192.168.2.5:8000/api/Product"); //API Shoping home
+        Uri.parse("http://192.168.2.5:8000/api/Signup"); //API Shoping home
     setState(() {
       _isLoading = true; // Ensure loading starts before request
       _hasError = false; // Reset error state
@@ -193,12 +193,12 @@ class _Login_pageState extends State<Login_page> {
                       ),
                       onPressed: () {
                         if (_formkey.currentState!.validate()) {
-                          String username = _usernameControler.text;
-                          String password = _passwordControler.text;
+                          String username = _usernameControler.text.trim();
+                          String password = _passwordControler.text.trim();
                           final matchedUser = _items.firstWhere(
                             (user) =>
-                                user['Username'] == username &&
-                                user['Password'] == password,
+                                user["Username"] == username &&
+                                user["Password"] == password,
                             orElse: () => null,
                           );
 
