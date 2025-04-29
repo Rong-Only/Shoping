@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, camel_case_types, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, camel_case_types, prefer_const_literals_to_create_immutables, unused_element
 
 import 'package:demo_interview/login.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +11,34 @@ class Singup_page extends StatefulWidget {
 }
 
 String? _selectedGender;
+Widget buildInputField({
+  required String hintText,
+  // required IconData icon,
+  bool obscureText = false,
+}) {
+  return Container(
+    height: 50,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.all(Radius.circular(5)),
+    ),
+    child: TextFormField(
+      obscureText: true,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(),
+        labelText: hintText,
+        enabledBorder: InputBorder.none,
+        hintStyle: TextStyle(
+          color: Colors.black,
+          fontSize: 25,
+          fontWeight: FontWeight.bold,
+        ),
+        // prefixIcon: Icon(icon),
+        // contentPadding: const EdgeInsets.symmetric(vertical: 15),
+      ),
+    ),
+  );
+}
 
 class _Singup_pageState extends State<Singup_page> {
   @override
@@ -24,9 +52,10 @@ class _Singup_pageState extends State<Singup_page> {
         backgroundColor: const Color.fromARGB(255, 227, 207, 54),
       ),
       backgroundColor: const Color.fromARGB(255, 227, 207, 54),
-      body: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20),
-        child: Center(
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 20, right: 20, top: 60),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -38,97 +67,43 @@ class _Singup_pageState extends State<Singup_page> {
                     fontWeight: FontWeight.bold),
               ),
               SizedBox(
-                height: 50,
+                height: 60,
               ),
-              Container(
-                height: 54,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(20))),
-                child: TextFormField(
-                  decoration: InputDecoration(
-                      hintText: 'Username',
-                      hintStyle: TextStyle(color: Colors.black),
-                      border: InputBorder.none, // Removes default border
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      prefixIcon: Icon(Icons.person),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 15)),
-                ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Container(
-                height: 54,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(20))),
-                child: TextFormField(
-                  decoration: InputDecoration(
-                      hintText: 'Email',
-                      hintStyle: TextStyle(color: Colors.black),
-                      border: InputBorder.none, // Removes default border
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      prefixIcon: Icon(Icons.email_outlined),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 15)),
-                ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Container(
-                height: 54,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(20))),
-                child: TextFormField(
-                  decoration: InputDecoration(
-                      hintText: 'Password',
-                      hintStyle: TextStyle(color: Colors.black),
-                      border: InputBorder.none, // Removes default border
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      prefixIcon: Icon(Icons.lock_outline),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 15)),
-                ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Container(
-                height: 54,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(20))),
-                child: TextFormField(
-                  decoration: InputDecoration(
-                      hintText: 'Confirm Password',
-                      hintStyle: TextStyle(color: Colors.black),
-                      border: InputBorder.none, // Removes default border
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      prefixIcon: Icon(Icons.lock_open_outlined),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 15)),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: buildInputField(
+                      hintText: 'First Name',
+                      // icon: Icons.person
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: buildInputField(
+                      hintText: 'Last Name',
+                      // icon: Icons.person
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: 10),
               Container(
-                height: 54,
+                height: 50,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                  borderRadius: BorderRadius.all(Radius.circular(5)),
                 ),
                 child: DropdownButtonFormField<String>(
                   decoration: InputDecoration(
-                    border: InputBorder.none,
-                    prefixIcon: Icon(Icons.girl_outlined),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                    border: OutlineInputBorder(),
+                    enabledBorder: InputBorder.none,
+                    // prefixIcon: Icon(Icons.person),
+                    // contentPadding: const EdgeInsets.symmetric(vertical: 15),
                   ),
                   hint: Text("Select Gender",
                       style: TextStyle(color: Colors.black)),
-                  items: ['Male', 'Female', 'Other']
+                  value: _selectedGender,
+                  items: ['Male', 'Female']
                       .map((gender) => DropdownMenuItem(
                             value: gender,
                             child: Text(gender),
@@ -141,6 +116,24 @@ class _Singup_pageState extends State<Singup_page> {
                   },
                 ),
               ),
+              SizedBox(height: 10),
+              buildInputField(
+                hintText: 'Username', /*icon: Icons.person*/
+              ),
+              SizedBox(height: 10),
+              buildInputField(
+                hintText: 'Email', /*icon: Icons.email_outlined*/
+              ),
+              SizedBox(height: 10),
+              buildInputField(
+                  hintText: 'Password',
+                  // icon: Icons.lock_outline,
+                  obscureText: true),
+              SizedBox(height: 10),
+              buildInputField(
+                  hintText: 'Confirm Password',
+                  // icon: Icons.lock_open_outlined,
+                  obscureText: true),
               SizedBox(
                 height: 15,
               ),
@@ -165,7 +158,7 @@ class _Singup_pageState extends State<Singup_page> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Signup',
+                        'Sign up',
                         style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -196,7 +189,7 @@ class _Singup_pageState extends State<Singup_page> {
                               builder: (context) => Login_page(),
                             ));
                       },
-                      child: Text("Signin")),
+                      child: Text("Sign in")),
                 ],
               ),
             ],

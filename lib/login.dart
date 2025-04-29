@@ -176,7 +176,7 @@ class _Login_pageState extends State<Login_page> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Login',
+                            'Sign in',
                             style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -207,7 +207,7 @@ class _Login_pageState extends State<Login_page> {
                                   builder: (context) => Singup_page(),
                                 ));
                           },
-                          child: Text("Singup")),
+                          child: Text("Sing up")),
                     ],
                   ),
                   Column(
