@@ -1,10 +1,11 @@
 // ignore_for_file: prefer_const_constructors, deprecated_member_use
-import 'package:demo_interview/card.dart';
-import 'package:demo_interview/favorite.dart';
-import 'package:demo_interview/home.dart';
-import 'package:demo_interview/login.dart';
-import 'package:demo_interview/menu.dart';
-import 'package:demo_interview/store.dart';
+
+import 'package:demo_interview/Views/card.dart';
+import 'package:demo_interview/Views/favorite.dart';
+import 'package:demo_interview/Views/home.dart';
+import 'package:demo_interview/Views/Store.dart';
+import 'package:demo_interview/Views/login.dart';
+import 'package:demo_interview/Views/menu.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

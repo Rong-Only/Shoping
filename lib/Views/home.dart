@@ -56,10 +56,10 @@ class _HomeState extends State<Home> {
 
   Future<void> _fetchData() async {
     // final url = Uri.parse("https://fakestoreapi.com/products");
-    // final url = Uri.parse("http://52.77.99.216/api/products/list");
+    // final url = Uri.parse("http://192.168.2.5/api/products/list");
     final url =
-        Uri.parse("http://192.168.1.201:8000/api/Product"); //API Shoping
-    // final url = Uri.parse("http://127.0.0.1:8000/api/Product"); //API Shoping
+        Uri.parse("http://192.168.1.201:8000/api/Product"); //API Shoping coffee
+    // final url = Uri.parse("http://192.168.2.5:8000/api/Product"); //API Shoping home
     setState(() {
       _isLoading = true; // Ensure loading starts before request
       _hasError = false; // Reset error state

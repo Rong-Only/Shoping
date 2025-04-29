@@ -1,6 +1,6 @@
 // ignore_for_file: prefer_const_constructors, camel_case_types, prefer_const_literals_to_create_immutables, unused_element
 
-import 'package:demo_interview/login.dart';
+import 'package:demo_interview/Views/login.dart';
 import 'package:flutter/material.dart';
 
 class Singup_page extends StatefulWidget {

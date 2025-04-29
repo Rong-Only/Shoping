@@ -1,6 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, camel_case_types
 
-import 'package:demo_interview/profile.dart';
+import 'package:demo_interview/Views/profile.dart';
 import 'package:flutter/material.dart';
 
 class menu extends StatefulWidget {

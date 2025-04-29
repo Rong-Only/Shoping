@@ -1,10 +1,12 @@
-// ignore_for_file: prefer_const_constructors, camel_case_types, prefer_const_literals_to_create_immutables, sized_box_for_whitespace, body_might_complete_normally_nullable, unused_import
+// ignore_for_file: prefer_const_constructors, camel_case_types, prefer_const_literals_to_create_immutables, sized_box_for_whitespace, body_might_complete_normally_nullable, unused_import, unused_field, prefer_final_fields
 
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:demo_interview/main.dart';
-import 'package:demo_interview/singup.dart';
+import 'package:demo_interview/Views/main.dart';
+import 'package:demo_interview/Views/singup.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class Login_page extends StatefulWidget {
   const Login_page({super.key});
@@ -14,16 +16,55 @@ class Login_page extends StatefulWidget {
 }
 
 class _Login_pageState extends State<Login_page> {
-  String username = 'root';
-  String password = '123546';
   bool _isOuscure = true;
-  bool _isRememberme = true;
+  // bool _isRememberme = true;
+
   final _formkey = GlobalKey<FormState>();
   final _usernameControler = TextEditingController();
   final _passwordControler = TextEditingController();
   var sneckBar = SnackBar(
     content: Text('Longin Success!'),
   );
+
+  bool _isSelectedicon = false;
+  int _selectedIndex = 0;
+  List<dynamic> _items = [];
+  bool _isLoading = true;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    final url =
+        Uri.parse("http://192.168.2.5:8000/api/Product"); //API Shoping home
+    setState(() {
+      _isLoading = true; // Ensure loading starts before request
+      _hasError = false; // Reset error state
+    });
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        setState(() {
+          _items = json.decode(response.body)['data'];
+          _isLoading = false;
+        });
+      } else {
+        throw Exception("Failed to load data");
+      }
+    } catch (e) {
+      setState(() {
+        setState(() {
+          _hasError = true;
+          _isLoading = false;
+        });
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,10 +115,7 @@ class _Login_pageState extends State<Login_page> {
                               const EdgeInsets.symmetric(vertical: 15)),
                       validator: (value) {
                         if (value!.isEmpty) {
-                          return 'Please Enter Username ';
-                        }
-                        if (value != username) {
-                          return 'Username is not correct';
+                          return 'Invalid usrenam';
                         }
                       },
                     ),
@@ -111,10 +149,7 @@ class _Login_pageState extends State<Login_page> {
                               const EdgeInsets.symmetric(vertical: 15)),
                       validator: (value) {
                         if (value!.isEmpty) {
-                          return 'Please Enter Passwprd ';
-                        }
-                        if (value != password) {
-                          return 'Password is not correct';
+                          return 'Invalid Password ';
                         }
                       },
                     ),
@@ -133,13 +168,13 @@ class _Login_pageState extends State<Login_page> {
                         ),
                       ),
                       Spacer(),
-                      Checkbox(
-                          value: _isRememberme,
-                          onChanged: (value) {
-                            setState(() {
-                              _isRememberme = value!;
-                            });
-                          })
+                      // Checkbox(
+                      //     value: _isRememberme,
+                      //     onChanged: (value) {
+                      //       setState(() {
+                      //         _isRememberme = value!;
+                      //       });
+                      //     })
                     ],
                   ),
                   SizedBox(
@@ -160,15 +195,27 @@ class _Login_pageState extends State<Login_page> {
                         if (_formkey.currentState!.validate()) {
                           String username = _usernameControler.text;
                           String password = _passwordControler.text;
-                          if (username == this.username &&
-                              password == this.password) {
+                          final matchedUser = _items.firstWhere(
+                            (user) =>
+                                user['Username'] == username &&
+                                user['Password'] == password,
+                            orElse: () => null,
+                          );
+
+                          if (matchedUser != null) {
                             ScaffoldMessenger.of(context)
                                 .showSnackBar(sneckBar);
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => MainScreen(),
-                                ));
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MainScreen()),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content:
+                                      Text("Invalid username or password")),
+                            );
                           }
                         }
                       },
