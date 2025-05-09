@@ -1,200 +1,204 @@
-// ignore_for_file: prefer_const_constructors, camel_case_types, prefer_const_literals_to_create_immutables, unused_element
+// ignore_for_file: prefer_const_constructors, camel_case_types, prefer_const_literals_to_create_immutables, unused_element, prefer_final_fields, unused_field, override_on_non_overriding_member, use_build_context_synchronously, non_constant_identifier_names
 
-
-import 'package:demo_interview/Views/signin.dart';
+import 'package:demo_interview/Models/api_respone.dart';
+import 'package:demo_interview/Models/user.dart';
+import 'package:demo_interview/Services/user_service.dart';
+import 'package:demo_interview/Views/main.dart';
+import 'package:demo_interview/constant.dart';
 import 'package:flutter/material.dart';
+import 'package:demo_interview/Views/signin.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class Singup_page extends StatefulWidget {
-  const Singup_page({super.key});
-
+class Singup extends StatefulWidget {
+  const Singup({super.key});
   @override
-  State<Singup_page> createState() => _Singup_pageState();
+  State<Singup> createState() => _SingupState();
 }
 
-String? _selectedGender;
-Widget buildInputField({
-  required String hintText,
-  // required IconData icon,
-  bool obscureText = false,
-}) {
-  return Container(
-    height: 50,
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.all(Radius.circular(5)),
-    ),
-    child: TextFormField(
-      obscureText: true,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(),
-        labelText: hintText,
-        enabledBorder: InputBorder.none,
-        hintStyle: TextStyle(
-          color: Colors.black,
-          fontSize: 25,
-          fontWeight: FontWeight.bold,
-        ),
-        // prefixIcon: Icon(icon),
-        // contentPadding: const EdgeInsets.symmetric(vertical: 15),
+class _SingupState extends State<Singup> {
+  String? _selectedGender;
+  bool loading = false;
+  final _formkey = GlobalKey<FormState>();
+  final TextEditingController _firstNameController = TextEditingController(),
+      _lastNameController = TextEditingController(),
+      _usernameController = TextEditingController(),
+      _emailController = TextEditingController(),
+      _passwordController = TextEditingController(),
+      _confirmPasswordController = TextEditingController();
+
+  void _saveAndRedirecToHome(User user) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    await pref.setString('token', user.token ?? '');
+    await pref.setInt('userId', user.id ?? 0);
+    Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => MainScreen()),
+        (route) => false);
+  }
+
+  void _registerUser() async {
+    ApiRespone response = await signup(
+      _firstNameController.text,
+      _lastNameController.text,
+      _selectedGender,
+      _usernameController.text,
+      _emailController.text,
+      _passwordController.text,
+      _confirmPasswordController.text,
+    );
+
+    if (response.error == null) {
+      _saveAndRedirecToHome(response.data as User);
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('${response.error}')));
+    }
+  }
+
+  Widget buildInputField({
+    required String hintText,
+    required TextEditingController controller,
+    bool obscureText = false,
+  }) {
+    return Container(
+      height: 50,
+      margin: EdgeInsets.symmetric(vertical: 5),
+      child: TextFormField(
+        controller: controller,
+        obscureText: obscureText,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter $hintText';
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: hintText,
+            hintStyle: TextStyle(
+              color: Colors.black,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+            filled: true,
+            fillColor: Colors.white),
       ),
-    ),
-  );
-}
+    );
+  }
 
-class _Singup_pageState extends State<Singup_page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "SHOPING",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
+        title: Text("SHOPING",
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         backgroundColor: const Color.fromARGB(255, 227, 207, 54),
       ),
       backgroundColor: const Color.fromARGB(255, 227, 207, 54),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
+      body: Form(
+        key: _formkey,
         child: Padding(
-          padding: const EdgeInsets.only(left: 20, right: 20, top: 60),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'SIGNUP YOUR ACCOUNT',
-                style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold),
-              ),
-              SizedBox(
-                height: 60,
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: buildInputField(
-                      hintText: 'First Name',
-                      // icon: Icons.person
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: buildInputField(
-                      hintText: 'Last Name',
-                      // icon: Icons.person
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-              Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          child: ListView(children: [
+            Column(
+              children: [
+                Text(
+                  'SIGNUP YOUR ACCOUNT',
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                 ),
-                child: DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    enabledBorder: InputBorder.none,
-                    // prefixIcon: Icon(Icons.person),
-                    // contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                SizedBox(height: 40),
+                Row(
+                  children: [
+                    Expanded(
+                      child: buildInputField(
+                        hintText: 'First Name',
+                        controller: _firstNameController,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: buildInputField(
+                        hintText: 'Last Name',
+                        controller: _lastNameController,
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 5, bottom: 5),
+                  child: DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(), // Adds border
+                      filled: true,
+                      fillColor:
+                          Colors.white, // Optional: adds background color
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    hint: Text("Select Gender",
+                        style: TextStyle(color: Colors.black)),
+                    value: _selectedGender,
+                    items: ['Male', 'Female']
+                        .map((gender) => DropdownMenuItem(
+                              value: gender,
+                              child: Text(gender),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedGender = value;
+                      });
+                    },
+                    validator: (value) => value == null
+                        ? 'Please select a gender'
+                        : null, // Optional validation
                   ),
-                  hint: Text("Select Gender",
-                      style: TextStyle(color: Colors.black)),
-                  value: _selectedGender,
-                  items: ['Male', 'Female']
-                      .map((gender) => DropdownMenuItem(
-                            value: gender,
-                            child: Text(gender),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
+                ),
+                buildInputField(
+                    hintText: 'Username', controller: _usernameController),
+                buildInputField(
+                    hintText: 'Email', controller: _emailController),
+                buildInputField(
+                    hintText: 'Password',
+                    controller: _passwordController,
+                    obscureText: true),
+                buildInputField(
+                    hintText: 'Confirm Password',
+                    controller: _confirmPasswordController,
+                    obscureText: true),
+                SizedBox(height: 20),
+                kElevatedButton('Sign Up', () {
+                  if (_formkey.currentState!.validate()) {
+                    if (_passwordController.text !=
+                        _confirmPasswordController.text) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Password do not match')));
+                      return;
+                    }
                     setState(() {
-                      _selectedGender = value;
+                      loading = !loading;
+                      _registerUser();
                     });
-                  },
-                ),
-              ),
-              SizedBox(height: 10),
-              buildInputField(
-                hintText: 'Username', /*icon: Icons.person*/
-              ),
-              SizedBox(height: 10),
-              buildInputField(
-                hintText: 'Email', /*icon: Icons.email_outlined*/
-              ),
-              SizedBox(height: 10),
-              buildInputField(
-                  hintText: 'Password',
-                  // icon: Icons.lock_outline,
-                  obscureText: true),
-              SizedBox(height: 10),
-              buildInputField(
-                  hintText: 'Confirm Password',
-                  // icon: Icons.lock_open_outlined,
-                  obscureText: true),
-              SizedBox(
-                height: 15,
-              ),
-              ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        Colors.blue, // <-- set your background color here
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(20), // optional: round corners
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Signin(),
-                        ));
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Sign up',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18),
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Icon(
-                        Icons.login,
-                        color: Colors.white,
-                        size: 20,
-                      )
-                    ],
-                  )),
-              SizedBox(
-                height: 10,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("You have already account!"),
-                  TextButton(
+                  }
+                }),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Already have an account?"),
+                    TextButton(
                       onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Signin(),
-                            ));
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => Signin()),
+                          (Route<dynamic> route) => false,
+                        );
                       },
-                      child: Text("Sign in")),
-                ],
-              ),
-            ],
-          ),
+                      child: Text("Sign in"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ]),
         ),
       ),
     );

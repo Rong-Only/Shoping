@@ -1,12 +1,17 @@
-// ignore_for_file: prefer_const_constructors, camel_case_types, prefer_const_literals_to_create_immutables, sized_box_for_whitespace, body_might_complete_normally_nullable, unused_import, unused_field, prefer_final_fields
+// ignore_for_file: prefer_const_constructors, camel_case_types, prefer_const_literals_to_create_immutables, sized_box_for_whitespace, body_might_complete_normally_nullable, unused_import, unused_field, prefer_final_fields, use_build_context_synchronously
 
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:demo_interview/Models/api_respone.dart';
+import 'package:demo_interview/Models/user.dart';
+import 'package:demo_interview/Services/user_service.dart';
 import 'package:demo_interview/Views/main.dart';
 import 'package:demo_interview/Views/singup.dart';
+import 'package:demo_interview/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Signin extends StatefulWidget {
   const Signin({super.key});
@@ -17,6 +22,7 @@ class Signin extends StatefulWidget {
 
 class _SigninState extends State<Signin> {
   bool _isOuscure = true;
+  bool loading = false;
   // bool _isRememberme = true;
 
   final _formkey = GlobalKey<FormState>();
@@ -26,44 +32,29 @@ class _SigninState extends State<Signin> {
     content: Text('Longin Success!'),
   );
 
-  bool _isSelectedicon = false;
-  int _selectedIndex = 0;
-  List<dynamic> _items = [];
-  bool _isLoading = true;
-  bool _hasError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchData();
+//function signinuser
+  void _signinUser() async {
+    ApiRespone respone =
+        await signin(_usernameControler.text, _passwordControler.text);
+    if (respone.error == null) {
+      _saveAndRedirecToHome(respone.data as User);
+    } else {
+      setState(() {
+        loading = false;
+      });
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('${respone.error}')));
+    }
   }
 
-  Future<void> _fetchData() async {
-    final url =
-        Uri.parse("http://192.168.2.5:8000/api/Signup"); //API Shoping home
-    setState(() {
-      _isLoading = true; // Ensure loading starts before request
-      _hasError = false; // Reset error state
-    });
-
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        setState(() {
-          _items = json.decode(response.body)['data'];
-          _isLoading = false;
-        });
-      } else {
-        throw Exception("Failed to load data");
-      }
-    } catch (e) {
-      setState(() {
-        setState(() {
-          _hasError = true;
-          _isLoading = false;
-        });
-      });
-    }
+//
+  void _saveAndRedirecToHome(User user) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    await pref.setString('token', user.token ?? '');
+    await pref.setInt('userId', user.id ?? 0);
+    Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => MainScreen()),
+        (route) => false);
   }
 
   @override
@@ -102,17 +93,9 @@ class _SigninState extends State<Signin> {
                         borderRadius: BorderRadius.all(Radius.circular(20))),
                     child: TextFormField(
                       controller: _usernameControler,
-                      decoration: InputDecoration(
-                          hintText: 'Username',
-                          hintStyle: TextStyle(color: Colors.white),
-                          border: InputBorder.none, // Removes default border
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          prefixIcon: Icon(Icons.person_rounded),
-                          suffixIcon: IconButton(
-                              onPressed: () {}, icon: Icon(Icons.check_circle)),
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 15)),
+                      decoration: kInputDecoration(
+                        'Username',
+                      ),
                       validator: (value) {
                         if (value!.isEmpty) {
                           return 'Invalid usrenam';
@@ -131,22 +114,7 @@ class _SigninState extends State<Signin> {
                     child: TextFormField(
                       controller: _passwordControler,
                       obscureText: _isOuscure,
-                      decoration: InputDecoration(
-                          hintText: 'Password',
-                          hintStyle: TextStyle(color: Colors.white),
-                          border: InputBorder.none, // Removes default border
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          prefixIcon: Icon(Icons.lock_open_outlined),
-                          suffixIcon: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _isOuscure = !_isOuscure;
-                                });
-                              },
-                              icon: Icon(Icons.remove_red_eye)),
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 15)),
+                      decoration: kInputDecoration('Password'),
                       validator: (value) {
                         if (value!.isEmpty) {
                           return 'Invalid Password ';
@@ -167,78 +135,19 @@ class _SigninState extends State<Signin> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Spacer(),
-                      // Checkbox(
-                      //     value: _isRememberme,
-                      //     onChanged: (value) {
-                      //       setState(() {
-                      //         _isRememberme = value!;
-                      //       });
-                      //     })
                     ],
                   ),
                   SizedBox(
                     height: 30,
                   ),
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            Colors.blue, // <-- set your background color here
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                              20), // optional: round corners
-                        ),
-                      ),
-                      onPressed: () {
-                        if (_formkey.currentState!.validate()) {
-                          String username = _usernameControler.text.trim();
-                          String password = _passwordControler.text.trim();
-                          final matchedUser = _items.firstWhere(
-                            (user) =>
-                                user["Username"] == username &&
-                                user["Password"] == password,
-                            orElse: () => null,
-                          );
-
-                          if (matchedUser != null) {
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(sneckBar);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => MainScreen()),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content:
-                                      Text("Invalid username or password")),
-                            );
-                          }
-                        }
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Sign in',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18),
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Icon(
-                            Icons.login,
-                            color: Colors.white,
-                            size: 20,
-                          )
-                        ],
-                      )),
+                  kElevatedButton('Sign In', () {
+                    if (_formkey.currentState!.validate()) {
+                      setState(() {
+                        loading = true;
+                        _signinUser();
+                      });
+                    }
+                  }),
                   SizedBox(
                     height: 10,
                   ),
@@ -248,11 +157,12 @@ class _SigninState extends State<Signin> {
                       Text("You have't account yet !"),
                       TextButton(
                           onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => Singup_page(),
-                                ));
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Singup()),
+                              (Route<dynamic> route) => false,
+                            );
                           },
                           child: Text("Sing up")),
                     ],
