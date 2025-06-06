@@ -1,6 +1,7 @@
 import 'dart:convert';
-
 import 'package:demo_interview/Models/api_respone.dart';
+import 'package:demo_interview/Models/category.dart';
+import 'package:demo_interview/Models/product.dart';
 import 'package:demo_interview/Models/user.dart';
 import 'package:demo_interview/constant.dart';
 import 'package:http/http.dart' as http;
@@ -10,20 +11,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 Future<ApiRespone> signin(String username, String password) async {
   ApiRespone apiRespone = ApiRespone();
   try {
-    final Response = await http.post(Uri.parse(signinURL),
+    final response = await http.post(Uri.parse(signinURL),
         headers: {'Accept': 'application/json'},
         body: {'username': username, 'password': password});
 
-    switch (Response.statusCode) {
+    switch (response.statusCode) {
       case 200:
-        apiRespone.data = User.fromjson(jsonDecode(Response.body));
+        apiRespone.data = User.fromjson(jsonDecode(response.body));
         break;
       case 422:
-        final errors = jsonDecode(Response.body)['errors'];
+        final errors = jsonDecode(response.body)['errors'];
         apiRespone.error = errors[errors.keys.elementAt(0)][0];
         break;
       case 403:
-        apiRespone.error = jsonDecode(Response.body)['message'];
+        apiRespone.error = jsonDecode(response.body)['message'];
         break;
       default:
         apiRespone.error = somethingwentWrong;
@@ -41,7 +42,7 @@ Future<ApiRespone> signup(String firstname, lastname, gender, username, email,
     password, confirmation) async {
   ApiRespone apiRespone = ApiRespone();
   try {
-    final Response = await http.post(Uri.parse(signupURL), headers: {
+    final response = await http.post(Uri.parse(signupURL), headers: {
       'Accept': 'application/json'
     }, body: {
       'first_name': firstname,
@@ -53,16 +54,16 @@ Future<ApiRespone> signup(String firstname, lastname, gender, username, email,
       'password_confirmation': confirmation
     });
 
-    switch (Response.statusCode) {
+    switch (response.statusCode) {
       case 200:
-        apiRespone.data = User.fromjson(jsonDecode(Response.body));
+        apiRespone.data = User.fromjson(jsonDecode(response.body));
         break;
       case 422:
-        final errors = jsonDecode(Response.body)['errors'];
+        final errors = jsonDecode(response.body)['errors'];
         apiRespone.error = errors[errors.keys.elementAt(0)][0];
         break;
       case 403:
-        apiRespone.error = jsonDecode(Response.body)['message'];
+        apiRespone.error = jsonDecode(response.body)['message'];
         break;
       default:
         apiRespone.error = somethingwentWrong;
@@ -80,14 +81,14 @@ Future<ApiRespone> getuser() async {
   ApiRespone apiRespone = ApiRespone();
   try {
     String token = await getToken();
-    final Response = await http.get(
+    final response = await http.get(
       Uri.parse(userURL),
       headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
-    switch (Response.statusCode) {
+    switch (response.statusCode) {
       case 200:
-        apiRespone.data = User.fromjson(jsonDecode(Response.body));
+        apiRespone.data = User.fromjson(jsonDecode(response.body));
         break;
       case 401:
         apiRespone.error = unauthorized;
@@ -119,4 +120,92 @@ Future<int> getUserId() async {
 Future<bool> signout() async {
   final SharedPreferences pref = await SharedPreferences.getInstance();
   return await pref.remove('token');
+}
+
+//product
+Future<ApiRespone> getproducts() async {
+  ApiRespone apiRespone = ApiRespone();
+
+  try {
+    final response = await http.get(
+      Uri.parse(productURL),
+      headers: {
+        'Accept': 'application/json',
+      },
+    );
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    switch (response.statusCode) {
+      case 200:
+        final data = jsonDecode(response.body);
+        if (data['data'] is List) {
+          apiRespone.data = (data['data'] as List)
+              .map((productJson) => Category.fromJson(productJson))
+              .toList();
+        } else {
+          apiRespone.error = "Unexpected data format";
+        }
+        break;
+
+      case 422:
+        final errors = jsonDecode(response.body)['errors'];
+        apiRespone.error = errors[errors.keys.first][0];
+        break;
+
+      case 403:
+        apiRespone.error = jsonDecode(response.body)['message'];
+        break;
+
+      default:
+        apiRespone.error = somethingwentWrong; // e.g., "Something went wrong"
+        break;
+    }
+  } catch (e) {
+    print('Exception: $e');
+    apiRespone.error = serverError; // e.g., "Server error"
+  }
+
+  return apiRespone;
+}
+
+//get category
+Future<ApiRespone> getCategory() async {
+  ApiRespone apiResponse = ApiRespone();
+
+  try {
+    final response = await http.get(
+      Uri.parse(categoryURL),
+      headers: {
+        'Accept': 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case 200:
+        final item = jsonDecode(response.body);
+        if (item['data'] is List) {
+          apiResponse.data = (item['data'] as List)
+              .map((categoryJson) => Category.fromJson(categoryJson))
+              .toList();
+        } else {
+          apiResponse.error = "Unexpected data format";
+        }
+        break;
+
+      case 403:
+        apiResponse.error = jsonDecode(response.body)['message'];
+        break;
+
+      default:
+        apiResponse.error = somethingwentWrong; // e.g. "Something went wrong"
+        break;
+    }
+  } catch (e) {
+    print('Exception: $e');
+    apiResponse.error = serverError; // e.g. "Server error"
+  }
+
+  return apiResponse;
 }
