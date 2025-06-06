@@ -1,6 +1,6 @@
 import 'dart:convert';
+import 'package:demo_interview/Models/api_category.dart';
 import 'package:demo_interview/Models/api_respone.dart';
-import 'package:demo_interview/Models/category.dart';
 import 'package:demo_interview/Models/product.dart';
 import 'package:demo_interview/Models/user.dart';
 import 'package:demo_interview/constant.dart';
@@ -123,7 +123,7 @@ Future<bool> signout() async {
 }
 
 //product
-Future<ApiRespone> getproducts() async {
+Future<ApiRespone> getProducts() async {
   ApiRespone apiRespone = ApiRespone();
 
   try {
@@ -142,7 +142,7 @@ Future<ApiRespone> getproducts() async {
         final data = jsonDecode(response.body);
         if (data['data'] is List) {
           apiRespone.data = (data['data'] as List)
-              .map((productJson) => Category.fromJson(productJson))
+              .map((productJson) => Product.fromJson(productJson))
               .toList();
         } else {
           apiRespone.error = "Unexpected data format";
@@ -172,40 +172,37 @@ Future<ApiRespone> getproducts() async {
 
 //get category
 Future<ApiRespone> getCategory() async {
-  ApiRespone apiResponse = ApiRespone();
+  ApiRespone apiCategory = ApiRespone();
 
   try {
-    final response = await http.get(
+    final responsecategory = await http.get(
       Uri.parse(categoryURL),
       headers: {
         'Accept': 'application/json',
       },
     );
 
-    switch (response.statusCode) {
-      case 200:
-        final item = jsonDecode(response.body);
-        if (item['data'] is List) {
-          apiResponse.data = (item['data'] as List)
-              .map((categoryJson) => Category.fromJson(categoryJson))
-              .toList();
-        } else {
-          apiResponse.error = "Unexpected data format";
-        }
-        break;
+    if (responsecategory.statusCode == 200) {
+      final dynamic itemCategory =
+          jsonDecode(responsecategory.body);
 
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
-      default:
-        apiResponse.error = somethingwentWrong; // e.g. "Something went wrong"
-        break;
+      if (itemCategory is List) {
+        apiCategory.data = itemCategory
+            .map((Json) => CategoryApi.fromJson(Json))
+            .toList();
+      } else {
+        apiCategory.error = "Unexpected data format";
+      }
+    } else if (responsecategory.statusCode == 403) {
+      final responseBody = jsonDecode(responsecategory.body);
+      apiCategory.error = responseBody['message'] ?? somethingwentWrong;
+    } else {
+      apiCategory.error = somethingwentWrong;
     }
   } catch (e) {
     print('Exception: $e');
-    apiResponse.error = serverError; // e.g. "Server error"
+    apiCategory.error = serverError;
   }
 
-  return apiResponse;
+  return apiCategory;
 }
