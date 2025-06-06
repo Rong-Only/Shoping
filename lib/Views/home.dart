@@ -4,7 +4,6 @@ import 'package:demo_interview/Models/product.dart';
 import 'package:demo_interview/Services/user_service.dart';
 import 'package:demo_interview/Views/buy.dart';
 import 'package:demo_interview/constant.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
@@ -396,7 +395,7 @@ class _HomeState extends State<Home> {
                         borderRadius: BorderRadius.circular(
                             12), // optional: rounded corners
                         child: Image.network(
-                          "http://192.168.0.14:8000/storage/img_url/${item.imgurl}", // make sure this is correct
+                          "http://192.168.2.5:8000/storage/img_url/${item.imgurl}", // make sure this is correct
                           width: 150,
                           height: 200,
                           fit: BoxFit.cover,
